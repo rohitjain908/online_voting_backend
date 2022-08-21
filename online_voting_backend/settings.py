@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'voting',
+    'Admin',
     'user',#change
     'rest_framework',#change
     'corsheaders',#change
