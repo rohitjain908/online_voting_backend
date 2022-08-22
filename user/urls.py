@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import login, create_access_token
+from .views import *
 
 
 urlpatterns = [
     path("login", login, name = "login"),
-    path("getToken", create_access_token, name = "token")
+    path("getToken", create_access_token, name = "token"),
+    path('registerVoter', registerVoter, name = "registerVoter")
    
 ]

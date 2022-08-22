@@ -5,6 +5,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import User
+from voting.models import *
+from django.contrib.auth.hashers import make_password,  check_password
 
 # Create your views here.
 
@@ -27,18 +29,28 @@ def decode_access_token(token):
 @csrf_exempt
 def login(request):
     if request.method == "POST":
-        #print(request.method)
         body = json.loads(request.body)
-        #print(body)
         email = body['email']
         password = body['password']
+        #print(password)
 
-        if not User.objects.filter(email = email, password = password).exists():
+        #print(encryptedPassword)
+
+        if not User.objects.filter(email = email).exists():
+            print("here")
             return JsonResponse({
-                "message" : "Invalid Credantial"
+                "message" : "Failed",
+                "error" : "Invalid Credantial"
             })
 
-        user = User.objects.filter(email = email, password = password)[0]
+        user = User.objects.filter(email = email)[0]
+        # print(user.password)
+        if not check_password(password, user.password):
+            return JsonResponse({
+                "message" : "Failed",
+                "error" : "Invalid Credantial"
+            })
+
         accessToekn = create_access_token(user.id)
 
         return JsonResponse({
@@ -47,5 +59,40 @@ def login(request):
         })
         
     return JsonResponse({"message":"This is not post request"})
+
+@csrf_exempt
+def registerVoter(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+
+        fullName = body['fullName']
+        university = body['university']
+        email = body['email']
+        password = body['password']
+        voted = False
+        isSuperAdmin = False
+
+
+        if User.objects.filter(email = email).exists():
+            return JsonResponse({
+                "message" : "Failed",
+                "error" : "user with this email id already exist"
+            })
+
+        encryptedPassword = make_password(password)
+
+
+        Voter.objects.create(
+            fullName = fullName,
+            university = university,
+            email = email,
+            password = encryptedPassword,
+            voted = voted,
+            isSuperAdmin = isSuperAdmin
+        )
+
+        return login(request)
+
+
    
 
