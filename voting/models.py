@@ -3,7 +3,7 @@ from user.models import User
 from django.db.models.fields.related import ForeignKey
 from django.db.models.deletion import CASCADE
 
-# Create your models here.
+
 
 class Voter(User):
     voted = models.BooleanField()
@@ -22,6 +22,7 @@ class Candidate(models.Model):
     ballotNumber = models.IntegerField()
     position = ForeignKey(Position, on_delete = CASCADE)
     bio = models.CharField(max_length = 100)
+    university = models.CharField(max_length = 100, default = "public university")
     #profile_pic = models.ImageField()
     voters = models.ManyToManyField(Voter)
     

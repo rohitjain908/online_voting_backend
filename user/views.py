@@ -61,7 +61,7 @@ def login(request):
     return JsonResponse({"message":"This is not post request"})
 
 @csrf_exempt
-def registerVoter(request):
+def registerVoter(request, id):
     if request.method == "POST":
         body = json.loads(request.body)
 
@@ -90,6 +90,11 @@ def registerVoter(request):
             voted = voted,
             isSuperAdmin = isSuperAdmin
         )
+
+        if id == 1 :
+            return JsonResponse({
+                "messgae" : "success"
+            })
 
         return login(request)
 
