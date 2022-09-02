@@ -15,16 +15,23 @@ class Position(models.Model):
     university = models.CharField(max_length = 100)
     maxVotes = models.IntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 #a candidate can be a voter
 class Candidate(models.Model):
     fullName = models.CharField(max_length = 100)
-    ballotNumber = models.IntegerField()
+    #ballotNumber = models.IntegerField() # assume:- ballot number will be candidate id
     position = ForeignKey(Position, on_delete = CASCADE)
     bio = models.CharField(max_length = 100)
     university = models.CharField(max_length = 100, default = "public university")
     #profile_pic = models.ImageField()
-    voters = models.ManyToManyField(Voter)
+    #voters = models.ManyToManyField(Voter)
+
+
+    def __str__(self):
+        return self.fullName
     
 
 class Votes(models.Model):
