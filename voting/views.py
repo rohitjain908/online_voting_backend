@@ -402,6 +402,43 @@ def deleteCandidate(request):
         "text" : "Deleted"
     })
 
+@csrf_exempt
+def ballotPosition(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    adminUniversity = body['adminUniversity']
+
+    validCandidates = Candidate.objects.all().filter(university = adminUniversity)
+    ballotPosition = dict()
+    for candidate in validCandidates:
+        position = candidate.position.name
+        ballotPosition[position] = []
+
+    votes = len(Votes.objects.all().filter(candidate = candidate))
+
+    for candidate in validCandidates:
+        position = candidate.position.name
+        ballotPosition[position].append({
+            "name" : candidate.fullName,
+            "bio" : candidate.bio,
+            "votes" : votes
+        })
+
+    return JsonResponse({
+        "message" : "success",
+        "data" : ballotPosition
+    })
+
+    
+
+     
+
+    
+
 
 
 

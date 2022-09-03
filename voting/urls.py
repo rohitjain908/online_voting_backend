@@ -16,5 +16,6 @@ urlpatterns = [
     path('getCandidate', getCandidate, name = "getCandidate"),
     path('editCandidate', editCandidate, name = "editCandidate"),
     path('deleteCandidate', deleteCandidate, name = "deleteCandidate"),
+    path('ballotPosition', ballotPosition, name = "ballotPosition"),
 
 ]
