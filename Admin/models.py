@@ -3,5 +3,5 @@ from user.models import User
 
 # Create your models here.
 
-class Admin(User):
-    university = models.CharField(max_length = 100)
+# class Admin(User):
+#     university = models.CharField(max_length = 100)

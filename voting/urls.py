@@ -17,5 +17,13 @@ urlpatterns = [
     path('editCandidate', editCandidate, name = "editCandidate"),
     path('deleteCandidate', deleteCandidate, name = "deleteCandidate"),
     path('ballotPosition', ballotPosition, name = "ballotPosition"),
+    path('addPosition', addPosition, name = "addPosition"),
+    path('getPosition', getPosition, name = "getPosition"),
+    path('editPosition', editPosition, name = "editPosition"),
+    path('deletePosition', deletePosition, name = "deletePosition"),
+    path('getDashBoardData', getDashBoardData, name = "getDashBoardData"),
+    path('isVoted', isVoted, name = "isVoted"),
+    path('voterBallot', voterBallot, name = "voterBallot"),
+    path('submitBallot', submitBallot, name = "submitBallot"),
 
 ]

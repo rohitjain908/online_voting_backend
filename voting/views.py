@@ -243,7 +243,7 @@ def addCandidate(request):
     if not Position.objects.all().filter(id = positionId).exists():
         return JsonResponse({
             "message" : "Failed",
-            "error" : "this position doesn't exist, Please selct valid position"
+            "error" : "this position doesn't exist, Please select valid position"
     })
 
     position = Position.objects.get(id = positionId)
@@ -278,10 +278,15 @@ def positionsList(request):
     adminUniversity = body['adminUniversity']
     validPositions = Position.objects.all().filter(university = adminUniversity)
     postionsList = []
+    
     for position in validPositions:
+        totalVotes = len(Votes.objects.all().filter(position = position))
+        #print(totalVotes)
         postionsList.append({
             "id" : position.id,
-            "name" : position.name
+            "name" : position.name,
+            "maxCandidates" : position.maxCandidates,
+            "totalVotes" : totalVotes
         })
 
     return JsonResponse({
@@ -418,10 +423,10 @@ def ballotPosition(request):
         position = candidate.position.name
         ballotPosition[position] = []
 
-    votes = len(Votes.objects.all().filter(candidate = candidate))
 
     for candidate in validCandidates:
         position = candidate.position.name
+        votes = len(Votes.objects.all().filter(candidate = candidate, position = candidate.position))
         ballotPosition[position].append({
             "name" : candidate.fullName,
             "bio" : candidate.bio,
@@ -432,6 +437,275 @@ def ballotPosition(request):
         "message" : "success",
         "data" : ballotPosition
     })
+
+@csrf_exempt
+def addPosition(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    name = body['name']
+    maxCandidates = body['maxCandidates']
+    university = body['university']
+
+    if Position.objects.all().filter(university = university , name = name).exists():
+        return JsonResponse({
+            "message" : "Failed",
+            "error" : "This position already exits, please use some other name"
+        })
+
+    
+    Position.objects.create(
+        name = name,
+        maxCandidates = maxCandidates,
+        university = university
+    )
+
+
+    return JsonResponse({
+        "message" : "success",
+        "text" : "Created"
+    })
+
+
+@csrf_exempt
+def getPosition(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    positionId = body['positionId']
+
+    if not Position.objects.filter(id = positionId).exists():
+        return JsonResponse({
+            "message" : "Failed",
+            "error" : "This Position does not exist"
+        })
+
+    position = Position.objects.get(id = positionId)
+
+    positionDetail = {
+        "name" : position.name,
+        "maxCandidates" : position.maxCandidates
+    }
+
+    return JsonResponse({
+        "message" : "success",
+        "positionDetail" : positionDetail
+    })
+
+
+@csrf_exempt
+def editPosition(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    positionId = body['positionId']
+
+    if not Position.objects.all().filter(id = positionId).exists():
+        return JsonResponse({
+            "message" : "Failed",
+            "error" : "This position does not exist"
+        })
+
+    name = body['name']
+    maxCandidates = body['maxCandidates']
+    university = body['university']
+
+    if Position.objects.all().filter(name = name , university = university):
+        id = Position.objects.all().filter(name = name, university = university)[0].id
+
+        if id != positionId:
+            return JsonResponse({
+                "message" : "Failed",
+                "error" : "this position already exist , please use some other name"
+            })
+    
+    Position.objects.all().filter(id = positionId).update(
+        name = name,
+        maxCandidates = maxCandidates,
+        university = university
+    )
+
+    return JsonResponse({
+        "message" : "success",
+        "text" : "Update Position details"
+    })
+
+
+@csrf_exempt
+def deletePosition(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    positionId = body['positionId']
+
+    if not Position.objects.all().filter(id = positionId).exists():
+        return JsonResponse({
+            "message" : "Failed",
+            "error" : "Position does not exist"
+    })
+    
+    instance = Position.objects.get(id = positionId)
+    instance.delete()
+
+    return JsonResponse({
+        "message" : "success",
+        "text" : "Deleted"
+    })
+
+
+@csrf_exempt
+def getDashBoardData(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    adminUniversity = body['adminUniversity']
+
+
+    votes = 0
+    validCandidates = Candidate.objects.all().filter(university = adminUniversity)
+    for candidate in validCandidates:
+        votes = votes + len(Votes.objects.all().filter(candidate = candidate))
+    candidates = len(Candidate.objects.all().filter(university = adminUniversity))
+    positions = len(Position.objects.all().filter(university = adminUniversity))
+    voters = len(Voter.objects.all().filter(university = adminUniversity))
+
+    dashBoardData = {
+        "votes" : votes,
+        "voters" : voters,
+        "positions" : positions,
+        "candidates" : candidates
+    }
+
+    return JsonResponse({
+        "message" : 'success',
+        "dashBoardData" : dashBoardData
+    })
+
+@csrf_exempt
+def isVoted(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    voterId = body['voterId']
+
+    if not Voter.objects.all().filter(id = voterId).exists():
+        return JsonResponse({
+            "message" : 'Failed',
+            "error" : "Voter does not exist"
+    })
+
+
+    voted = Voter.objects.get(id = voterId).voted
+    return JsonResponse({
+            "message" : 'success',
+            "voted" : voted
+    })
+
+@csrf_exempt
+def voterBallot(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    voterId = body['voterId']
+
+    if not Voter.objects.all().filter(id = voterId).exists():
+        return JsonResponse({
+            "message" : 'Failed',
+            "error" : "Voter does not exist"
+    })
+
+    voter = Voter.objects.get(id = voterId)
+    votes = Votes.objects.all().filter(voter = voter)
+
+    ballot = {}
+
+    for vote in votes:
+        candidate = vote.candidate
+        position = vote.position
+
+        ballot[position.name] = candidate.fullName
+
+    
+    return JsonResponse({
+            "message" : 'success',
+            "ballot" : ballot
+    })
+
+@csrf_exempt
+def submitBallot(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            "messgae" : "This is not a Post request"
+        })
+
+    body = json.loads(request.body)
+    voterId = body['voterId']
+    votes = body['votes']
+
+    voter = Voter.objects.get(id = voterId)
+    university = voter.university
+    print(votes)
+    for positionName in votes:
+        candidatename = votes[positionName]
+        candidate = Candidate.objects.get(university = university, fullName = candidatename)
+        position = Position.objects.get(name = positionName, university = university)
+
+        Votes.objects.create(
+            voter = voter,
+            position = position,
+            candidate = candidate
+        )
+
+
+    Voter.objects.all().filter(id = voterId).update(
+        voted = True
+    )
+    return JsonResponse({
+        "message" : 'success',    
+    })
+    
+
+    
+
+
+
+    
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+        
 
     
 

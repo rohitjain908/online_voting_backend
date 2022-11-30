@@ -10,10 +10,12 @@ class User(models.Model):
     email = models.EmailField()
     isSuperAdmin = models.BooleanField()
 
+    def __str__(self):
+        return self.email
 
 
 
 
-
-
+class Admin(User):
+    university = models.CharField(max_length = 100)
 
